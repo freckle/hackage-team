@@ -28,15 +28,14 @@ class HasHackageApiKey env where
 instance HasHackageApiKey HackageApiKey where
   hackageApiKeyL = id
 
-
 newtype HackageUser = HackageUser
   { groups :: [Text]
   }
   deriving stock Generic
   deriving anyclass FromJSON
 
-packageFromGroup :: Text -> Maybe Package
-packageFromGroup a = do
+packageFromMaintainers :: Text -> Maybe Package
+packageFromMaintainers a = do
   b <- stripPrefix "/package/" a
   c <- stripSuffix "/maintainers" b
   pure $ Package c
@@ -89,7 +88,7 @@ instance (MonadIO m, MonadReader env m, HasHackageApiKey env)
 
   getMaintainedPackages (HackageUsername username) = do
     bs <- view $ hackageApiKeyL . unL
-    fmap (mapMaybe packageFromGroup . groups . getResponseBody)
+    fmap (mapMaybe packageFromMaintainers . groups . getResponseBody)
       $ httpJSON
       $ addApiKeyAuthorization bs
       $ parseRequest_
