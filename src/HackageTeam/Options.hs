@@ -42,7 +42,7 @@ options =
       (  long "no-remove"
       <> help "Don't process maintainers that need removing"
       )
-    <*> many (option (eitherReader readPackage)
+    <*> many (Package <$> option str
       (  long "exclude"
       <> metavar "PACKAGE"
       <> help "Don't process PACKAGE"

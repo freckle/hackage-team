@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 87b6fc23fb6bf140d811ecaad47499be3c7fbf16acce7d07cda4dc639e2e1de1
+-- hash: 51660e99302eeab299ac37aa50bb031d84609a39a944cd3845fcf1e701be22fa
 
 name:           hackage-team
 version:        0.0.0.1
@@ -29,6 +29,7 @@ library
   exposed-modules:
       HackageTeam.App
       HackageTeam.HackageApi
+      HackageTeam.HackageApi.Actual
       HackageTeam.HTTP
       HackageTeam.Options
       HackageTeam.Prelude

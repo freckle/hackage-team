@@ -9,6 +9,7 @@ import HackageTeam.Prelude
 
 import qualified Data.ByteString.Char8 as BS8
 import HackageTeam.HackageApi
+import HackageTeam.HackageApi.Actual
 import HackageTeam.Options
 import System.Environment (getEnv)
 
