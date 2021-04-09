@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: fa46c589623ca0c2403b5c0480ead58769630a46b957e958d453897b75fe2d8b
+-- hash: 87b6fc23fb6bf140d811ecaad47499be3c7fbf16acce7d07cda4dc639e2e1de1
 
 name:           hackage-team
 version:        0.0.0.1
@@ -29,6 +29,7 @@ library
   exposed-modules:
       HackageTeam.App
       HackageTeam.HackageApi
+      HackageTeam.HTTP
       HackageTeam.Options
       HackageTeam.Prelude
       HackageTeam.Run
@@ -39,8 +40,14 @@ library
   default-extensions: BangPatterns DataKinds DeriveAnyClass DeriveFoldable DeriveFunctor DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies DerivingVia FlexibleContexts FlexibleInstances GADTs GeneralizedNewtypeDeriving LambdaCase MultiParamTypeClasses NoImplicitPrelude NoMonomorphismRestriction OverloadedStrings RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TypeApplications TypeFamilies
   ghc-options: -Weverything -Wno-missing-import-lists -Wno-missing-safe-haskell-mode -Wno-prepositive-qualified-module -Wno-unsafe
   build-depends:
-      base >=4.11 && <5
+      aeson
+    , base >=4.11 && <5
+    , bytestring
+    , http-client
+    , http-conduit
+    , http-types
     , monad-logger
+    , optparse-applicative
     , rio
   default-language: Haskell2010
 
