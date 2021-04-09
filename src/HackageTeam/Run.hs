@@ -1,19 +1,17 @@
 module HackageTeam.Run
   ( run
+  , getMaintainers
   ) where
 
 import HackageTeam.Prelude
 
 import HackageTeam.HackageApi
 import HackageTeam.Options
+import qualified RIO.ByteString as BS
+import qualified RIO.Text as T
 
-run
-  :: (MonadLogger m, MonadHackage m, MonadReader env m, HasOptions env)
-  => [HackageUsername]
-  -> m ()
-run expectedMaintainers = do
-  Options {..} <- view optionsL
-
+run :: (MonadLogger m, MonadHackage m) => Options -> [HackageUsername] -> m ()
+run Options {..} expectedMaintainers = do
   username <- getSelf
   logDebug $ "Running as Maintainer: " <> display username
 
@@ -36,3 +34,13 @@ run expectedMaintainers = do
       $ \maintainer -> do
           logInfo $ "Present, not expected: " <> display maintainer
           when oFix $ removePackageMaintainer package maintainer
+
+-- | Read a list of expected maintainers, one per line, on @stdin@
+--
+-- This is only extracted so 'run' can be tested in isolation.
+--
+getMaintainers :: MonadIO m => m [HackageUsername]
+getMaintainers = readMaintainers <$> BS.getContents
+
+readMaintainers :: ByteString -> [HackageUsername]
+readMaintainers = map HackageUsername . T.lines . decodeUtf8

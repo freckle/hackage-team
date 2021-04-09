@@ -19,5 +19,5 @@ disableRedirects req = req { redirectCount = 0 }
 
 lookupResponseHeader :: HeaderName -> Response body -> Maybe Text
 lookupResponseHeader n resp = case getResponseHeader n resp of
-  (bs : _) -> Just $ decodeUtf8With lenientDecode bs
+  (bs : _) -> Just $ decodeUtf8 bs
   _ -> Nothing

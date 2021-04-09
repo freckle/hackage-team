@@ -5,6 +5,7 @@ module HackageTeam.Prelude
   , logInfo
   , logDebug
   , logOther
+  , decodeUtf8
   ) where
 
 import RIO as X hiding
@@ -40,3 +41,6 @@ logDebug = logDebugN . utf8BuilderToText
 
 logOther :: MonadLogger m => LogLevel -> Utf8Builder -> m ()
 logOther l = logOtherN l . utf8BuilderToText
+
+decodeUtf8 :: ByteString -> Text
+decodeUtf8 = decodeUtf8With lenientDecode
