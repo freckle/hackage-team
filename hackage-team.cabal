@@ -1,0 +1,57 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.33.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: b78278242f1deb7e8a4d6fc06f79236d9d031f242250d6331a84d28ef9053a59
+
+name:           hackage-team
+version:        0.0.0.1
+description:    Please see <https://github.com/freckle/hackage-team#readme>
+homepage:       https://github.com/freckle/hackage-team#readme
+bug-reports:    https://github.com/freckle/hackage-team/issues
+author:         Freckle Engineering
+maintainer:     freckle-engineering@renaissance.com
+copyright:      2021 Renaissance Learning Inc
+license:        MIT
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/freckle/hackage-team
+
+library
+  exposed-modules:
+      HackageTeam.App
+      HackageTeam.HackageApi
+      HackageTeam.Options
+      HackageTeam.Prelude
+      HackageTeam.Run
+  other-modules:
+      Paths_hackage_team
+  hs-source-dirs:
+      src
+  default-extensions: BangPatterns DataKinds DeriveAnyClass DeriveFoldable DeriveFunctor DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies DerivingVia FlexibleContexts FlexibleInstances GADTs GeneralizedNewtypeDeriving LambdaCase MultiParamTypeClasses NoImplicitPrelude NoMonomorphismRestriction OverloadedStrings RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TypeApplications TypeFamilies
+  ghc-options: -Weverything -Wno-missing-import-lists -Wno-missing-safe-haskell-mode -Wno-prepositive-qualified-module -Wno-unsafe
+  build-depends:
+      base >=4.11 && <5
+    , monad-logger
+    , rio
+  default-language: Haskell2010
+
+executable hackage-team
+  main-is: Main.hs
+  other-modules:
+      Paths_hackage_team
+  hs-source-dirs:
+      app
+  default-extensions: BangPatterns DataKinds DeriveAnyClass DeriveFoldable DeriveFunctor DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies DerivingVia FlexibleContexts FlexibleInstances GADTs GeneralizedNewtypeDeriving LambdaCase MultiParamTypeClasses NoImplicitPrelude NoMonomorphismRestriction OverloadedStrings RankNTypes RecordWildCards ScopedTypeVariables StandaloneDeriving TypeApplications TypeFamilies
+  ghc-options: -Weverything -Wno-missing-import-lists -Wno-missing-safe-haskell-mode -Wno-prepositive-qualified-module -Wno-unsafe -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.11 && <5
+    , hackage-team
+  default-language: Haskell2010

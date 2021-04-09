@@ -1,0 +1,78 @@
+name: hackage-team
+version: 0.0.0.1
+github: freckle/hackage-team
+license: MIT
+author: Freckle Engineering
+maintainer: freckle-engineering@renaissance.com
+copyright: 2021 Renaissance Learning Inc
+
+extra-source-files:
+  - README.md
+  - CHANGELOG.md
+
+description: Please see <https://github.com/freckle/hackage-team#readme>
+
+dependencies:
+  - base >= 4.11 && < 5
+
+ghc-options:
+  - -Weverything
+  - -Wno-missing-import-lists
+  - -Wno-missing-safe-haskell-mode
+  - -Wno-prepositive-qualified-module
+  - -Wno-unsafe
+
+default-extensions:
+  - BangPatterns
+  - DataKinds
+  - DeriveAnyClass
+  - DeriveFoldable
+  - DeriveFunctor
+  - DeriveGeneric
+  - DeriveLift
+  - DeriveTraversable
+  - DerivingStrategies
+  - DerivingVia
+  - FlexibleContexts
+  - FlexibleInstances
+  - GADTs
+  - GeneralizedNewtypeDeriving
+  - LambdaCase
+  - MultiParamTypeClasses
+  - NoImplicitPrelude
+  - NoMonomorphismRestriction
+  - OverloadedStrings
+  - RankNTypes
+  - RecordWildCards
+  - ScopedTypeVariables
+  - StandaloneDeriving
+  - TypeApplications
+  - TypeFamilies
+
+library:
+  source-dirs: src
+  dependencies:
+    - monad-logger
+    - rio
+
+executables:
+  hackage-team:
+    main: Main.hs
+    source-dirs: app
+    dependencies:
+      - hackage-team
+    ghc-options:
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+# tests:
+#   spec:
+#     main: Spec.hs
+#     source-dirs: test
+#     dependencies:
+#       - aeson
+#       - aeson-qq
+#       - hspec
+#       - lens
+#       - lens-aeson
+#       - hackage-team
