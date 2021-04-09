@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b78278242f1deb7e8a4d6fc06f79236d9d031f242250d6331a84d28ef9053a59
+-- hash: fa46c589623ca0c2403b5c0480ead58769630a46b957e958d453897b75fe2d8b
 
 name:           hackage-team
 version:        0.0.0.1
@@ -15,6 +15,7 @@ author:         Freckle Engineering
 maintainer:     freckle-engineering@renaissance.com
 copyright:      2021 Renaissance Learning Inc
 license:        MIT
+license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
     README.md
