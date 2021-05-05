@@ -105,6 +105,40 @@ instance (MonadIO m, MonadReader env m, HasHackageApiKey env)
       <> unpack name
       <> "/maintainers/"
 
-  addPackageMaintainer = undefined
+  addPackageMaintainer (Package name) (HackageUsername user) = do
+    bs <- view $ hackageApiKeyL . unL
 
-  removePackageMaintainer = undefined
+    let
+      reason :: Text
+      reason = "Added by freckle/hackage-team"
+
+    void
+      $ httpNoBody
+      $ addApiKeyAuthorization bs
+      $ addToRequestQueryString
+          [ ("user", Just $ encodeUtf8 user)
+          , ("reason", Just $ encodeUtf8 reason)
+          ]
+      $ setRequestCheckStatus
+      $ parseRequest_
+      $ "POST https://hackage.haskell.org/package/"
+      <> unpack name
+      <> "/maintainers/"
+
+  removePackageMaintainer (Package name) (HackageUsername user) = do
+    bs <- view $ hackageApiKeyL . unL
+
+    let
+      reason :: Text
+      reason = "Removed by freckle/hackage-team"
+
+    void
+      $ httpNoBody
+      $ addApiKeyAuthorization bs
+      $ addToRequestQueryString [("reason", Just $ encodeUtf8 reason)]
+      $ setRequestCheckStatus
+      $ parseRequest_
+      $ "DELETE https://hackage.haskell.org/package/"
+      <> unpack name
+      <> "/maintainers/user/"
+      <> unpack user
