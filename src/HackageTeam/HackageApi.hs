@@ -26,3 +26,10 @@ class Monad m => MonadHackage m where
   addPackageMaintainer :: Package -> HackageUsername -> m ()
 
   removePackageMaintainer :: Package -> HackageUsername -> m ()
+
+instance MonadHackage m => MonadHackage (StateT s m) where
+  getSelf = lift getSelf
+  getMaintainedPackages x = lift $ getMaintainedPackages x
+  getPackageMaintainers x = lift $ getPackageMaintainers x
+  addPackageMaintainer x y = lift $ addPackageMaintainer x y
+  removePackageMaintainer x y = lift $ removePackageMaintainer x y
