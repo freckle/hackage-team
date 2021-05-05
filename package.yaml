@@ -72,7 +72,6 @@ executables:
       - -threaded
       - -rtsopts
       - -with-rtsopts=-N
-
 # tests:
 #   spec:
 #     main: Spec.hs
