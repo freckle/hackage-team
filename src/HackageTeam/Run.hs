@@ -10,7 +10,11 @@ import HackageTeam.Options
 import qualified RIO.ByteString as BS
 import qualified RIO.Text as T
 
-run :: (MonadLogger m, MonadHackage m) => Options -> [HackageUsername] -> m ()
+run
+  :: (MonadState Bool m, MonadLogger m, MonadHackage m)
+  => Options
+  -> [HackageUsername]
+  -> m ()
 run Options {..} expectedMaintainers = do
   username <- getSelf
   logDebug $ "Running as Maintainer: " <> display username
@@ -26,12 +30,14 @@ run Options {..} expectedMaintainers = do
     unless oSuppressAdds
       $ for_ (filter (`notElem` maintainers) expectedMaintainers)
       $ \maintainer -> do
+          put True
           logInfo $ "Expected, not present: " <> display maintainer
           when oFix $ addPackageMaintainer package maintainer
 
     unless oSuppressRemoves
       $ for_ (filter (`notElem` expectedMaintainers) maintainers)
       $ \maintainer -> do
+          put True
           logInfo $ "Present, not expected: " <> display maintainer
           when oFix $ removePackageMaintainer package maintainer
 

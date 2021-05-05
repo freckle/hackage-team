@@ -10,7 +10,8 @@ import HackageTeam.Run
 
 main :: IO ()
 main = do
-  options <- parseOptions
+  options@Options {..} <- parseOptions
   maintainers <- getMaintainers
   app <- loadApp options
-  runAppT app $ run options maintainers
+  checkFailed <- runAppT app $ execStateT (run options maintainers) False
+  when (checkFailed && not oFix && not oExitZero) exitFailure

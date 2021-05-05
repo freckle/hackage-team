@@ -14,6 +14,7 @@ data Options = Options
   , oSuppressRemoves :: Bool
   , oExclude :: [Package]
   , oFix :: Bool
+  , oExitZero :: Bool
   , oVerbose :: Bool
   }
 
@@ -50,6 +51,10 @@ options =
     <*> switch
       (  long "fix"
       <> help "Actually add/remove as required"
+      )
+    <*> switch
+      (  long "exit-zero"
+      <> help "Exit zero even if unfixed issues were found"
       )
     <*> switch
       (  long "verbose"
