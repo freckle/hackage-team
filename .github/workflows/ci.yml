@@ -15,16 +15,18 @@ jobs:
         with:
           weeder: false
 
-      - name: Adjust Freckle maintainers
+      - name: Add new Freckle maintainers
         if: ${{ github.ref == 'refs/heads/main' }}
         env:
           HACKAGE_API_KEY: ${{ secrets.HACKAGE_API_KEY }}
         run: |
-          # Additions can be auto-fixed
           stack exec hackage-team -- --no-remove --fix \
             < ./FRECKLE_MAINTAINERS.txt
 
-          # Removals should fail the build and be manually fixed. Also sendgrid
-          # is expected to have extra users so we skip that.
+      - name: Check for extra Freckle maintainers
+        if: ${{ github.ref == 'refs/heads/main' }}
+        env:
+          HACKAGE_API_KEY: ${{ secrets.HACKAGE_API_KEY }}
+        run: |
           stack exec hackage-team -- --no-add --exclude sendgrid-v3 \
             < ./FRECKLE_MAINTAINERS.txt
