@@ -31,14 +31,14 @@ run Options {..} expectedMaintainers = do
       $ for_ (filter (`notElem` maintainers) expectedMaintainers)
       $ \maintainer -> do
           put True
-          logInfo $ "Expected, not present: " <> display maintainer
+          logWarn $ "Expected, not present: " <> display maintainer
           when oFix $ addPackageMaintainer package maintainer
 
     unless oSuppressRemoves
       $ for_ (filter (`notElem` expectedMaintainers) maintainers)
       $ \maintainer -> do
           put True
-          logInfo $ "Present, not expected: " <> display maintainer
+          logWarn $ "Present, not expected: " <> display maintainer
           when oFix $ removePackageMaintainer package maintainer
 
 -- | Read a list of expected maintainers, one per line, on @stdin@
