@@ -8,7 +8,19 @@ on:
   workflow_dispatch:
 
 jobs:
+  check-uploader-packages:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: ./.github/bin/check-uploader-packages
+        env:
+          DRY_RUN: ${{ github.ref == 'refs/heads/main' && '0' || '1' }}
+          GH_TOKEN: ${{ github.token }}
+          HACKAGE_API_KEY: ${{ secrets.HACKAGE_API_KEY }}
+          HACKAGE_UPLOAD_API_KEY: ${{ secrets.HACKAGE_UPLOAD_API_KEY }}
+
   test:
+    needs: [check-uploader-packages]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

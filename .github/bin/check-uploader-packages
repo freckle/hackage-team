@@ -1,0 +1,99 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+: "${DRY_RUN:=1}"
+: "${ORG:=freckle}"
+
+if [[ -z "${HACKAGE_API_KEY:=""}" ]]; then
+  echo "HACKAGE_API_KEY must be set" >&2
+  exit 1
+fi
+
+if [[ -z "${HACKAGE_UPLOAD_API_KEY:=""}" ]]; then
+  echo "HACKAGE_UPLOAD_API_KEY must be set" >&2
+  exit 1
+fi
+
+get_username() {
+  local key=$1
+  curl \
+    --silent \
+    -D - \
+    -H "authorization: X-ApiKey $key" \
+    "https://hackage.haskell.org/users/account-management" |
+    tr '\r\n' '\n' | # HTTP uses CRLF
+    sed '/^Location: \/user\/\([^\/]*\)\/manage$/!d; s//\1/'
+}
+
+get_packages() {
+  local key=$1 username=$2
+
+  curl \
+    --silent \
+    -H "accept: application/json" \
+    -H "authorization: X-ApiKey $key" \
+    "https://hackage.haskell.org/user/$username" |
+    jq --raw-output '.groups | .[]' |
+    sed '/^\/package\/\([^\/]*\)\/maintainers/!d; s//\1/' |
+    sort -u
+}
+
+add_maintainer() {
+  local key=$1 package=$2 maintainer=$3 reason=$4
+  local query="user=$maintainer&reason=Added%20by%20freckle/hackage-team"
+
+  if ((DRY_RUN)); then
+    printf 'Would add \e[36m%s\e[0m to \e[32m%s\e[0m (\e[35m%s\e[0m), skipping due to DRY_RUN\n' "$maintainer" "$package" "$reason"
+  else
+    printf 'Add \e[36m%s\e[0m to \e[32m%s\e[0m (\e[35m%s\e[0m)\n' "$maintainer" "$package" "$reason"
+    curl \
+      --silent \
+      -D - \
+      -H "authorization: X-ApiKey $key" \
+      -X POST \
+      "https://hackage.haskell.org/package/$package/maintainers?$query"
+  fi
+}
+
+repo_exists() {
+  gh repo view "$ORG/$1" &>/dev/null
+}
+
+cabal_file_repo() {
+  local q="$1.cabal+in:path+org:$ORG"
+  gh api "/search/code?q=$q" --jq '.items | .[] | .repository.full_name' 2>/dev/null
+}
+
+read -r maintainer < <(get_username "$HACKAGE_API_KEY")
+
+if [[ -z "$maintainer" ]]; then
+  echo "Unable to determine maintainer from HACKAGE_API_KEY" >&2
+  exit 1
+fi
+
+read -r uploader < <(get_username "$HACKAGE_UPLOAD_API_KEY")
+
+if [[ -z "$uploader" ]]; then
+  echo "Unable to determine uploader from HACKAGE_UPLOAD_API_KEY" >&2
+  exit 1
+fi
+
+mapfile -t packages < <(comm -23 \
+  <(get_packages "$HACKAGE_UPLOAD_API_KEY" "$uploader") \
+  <(get_packages "$HACKAGE_API_KEY" "$maintainer"))
+
+printf 'Found \e[31m%i\e[0m package(s) maintained by \e[35m%s\e[0m, but not \e[36m%s\e[0m\n' "${#packages[@]}" "$uploader" "$maintainer"
+
+for package in "${packages[@]}"; do
+  if repo_exists "$package"; then
+    add_maintainer "$HACKAGE_UPLOAD_API_KEY" "$package" "$maintainer" "$ORG/$package exists"
+    continue
+  fi
+
+  if read -r repo < <(cabal_file_repo "$package");then
+    if [[ -n "$repo" ]]; then
+      add_maintainer "$HACKAGE_UPLOAD_API_KEY" "$package" "$maintainer" "$package.cabal exists in $repo"
+      continue
+    fi
+  fi
+done
