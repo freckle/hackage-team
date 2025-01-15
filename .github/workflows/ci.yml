@@ -4,18 +4,15 @@ on:
   pull_request:
   push:
     branches: main
-    
+
   workflow_dispatch:
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: freckle/stack-cache-action@v1
-      - uses: freckle/stack-action@main
-        with:
-          weeder: false
+      - uses: actions/checkout@v4
+      - uses: freckle/stack-action@v5
 
       - name: Add new Freckle maintainers
         if: ${{ github.ref == 'refs/heads/main' }}

@@ -9,7 +9,7 @@ module HackageTeam.Prelude
   ) where
 
 import RIO as X hiding
-  ( LogLevel(..)
+  ( LogLevel (..)
   , LogSource
   , logDebug
   , logDebugS
@@ -24,7 +24,12 @@ import RIO as X hiding
   )
 
 import Control.Monad.Logger as X hiding
-  (logDebug, logError, logInfo, logOther, logWarn)
+  ( logDebug
+  , logError
+  , logInfo
+  , logOther
+  , logWarn
+  )
 import Control.Monad.State as X
 import RIO.Text as X (pack, unpack)
 

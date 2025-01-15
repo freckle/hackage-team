@@ -1,6 +1,6 @@
 module HackageTeam.Options
-  ( Options(..)
-  , HasOptions(..)
+  ( Options (..)
+  , HasOptions (..)
   , parseOptions
   ) where
 
@@ -10,12 +10,12 @@ import HackageTeam.HackageApi
 import Options.Applicative
 
 data Options = Options
-  { oSuppressAdds :: Bool
-  , oSuppressRemoves :: Bool
-  , oExclude :: [Package]
-  , oFix :: Bool
-  , oExitZero :: Bool
-  , oVerbose :: Bool
+  { suppressAdds :: Bool
+  , suppressRemoves :: Bool
+  , exclude :: [Package]
+  , fix :: Bool
+  , exitZero :: Bool
+  , verbose :: Bool
   }
 
 class HasOptions env where
@@ -30,7 +30,7 @@ parseOptions = execParser $ withInfo "Maintain Hackage teams" options
 withInfo :: Text -> Parser a -> ParserInfo a
 withInfo d p = info (p <**> helper) $ progDesc (unpack d) <> fullDesc
 
--- brittany-disable-next-binding
+{- FOURMOLU_DISABLE -}
 
 options :: Parser Options
 options =
@@ -60,3 +60,5 @@ options =
       (  long "verbose"
       <> help "Log verbosely"
       )
+
+{- FOURMOLU_ENABLE -}
