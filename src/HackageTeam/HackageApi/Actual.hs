@@ -2,9 +2,9 @@
 
 -- | An implementation of 'MonadHackage' that performs real HTTP
 module HackageTeam.HackageApi.Actual
-  ( HackageApiKey(..)
-  , HasHackageApiKey(..)
-  , ActualHackage(..)
+  ( HackageApiKey (..)
+  , HasHackageApiKey (..)
+  , ActualHackage (..)
   ) where
 
 import HackageTeam.Prelude
@@ -16,11 +16,11 @@ import Network.HTTP.Types.Header (hLocation)
 import RIO.Text (stripPrefix, stripSuffix)
 
 newtype HackageApiKey = HackageApiKey
-  { unHackageApiKey :: ByteString
+  { unwrap :: ByteString
   }
 
 unL :: Lens' HackageApiKey ByteString
-unL = lens unHackageApiKey $ \x y -> x { unHackageApiKey = y }
+unL = lens (.unwrap) $ \x y -> x {unwrap = y}
 
 class HasHackageApiKey env where
   hackageApiKeyL :: Lens' env HackageApiKey
@@ -31,8 +31,8 @@ instance HasHackageApiKey HackageApiKey where
 newtype HackageUser = HackageUser
   { groups :: [Text]
   }
-  deriving stock Generic
-  deriving anyclass FromJSON
+  deriving stock (Generic)
+  deriving anyclass (FromJSON)
 
 packageFromMaintainers :: Text -> Maybe Package
 packageFromMaintainers a = do
@@ -43,14 +43,14 @@ packageFromMaintainers a = do
 newtype HackageGroup = HackageGroup
   { members :: [HackageGroupMember]
   }
-  deriving stock Generic
-  deriving anyclass FromJSON
+  deriving stock (Generic)
+  deriving anyclass (FromJSON)
 
 newtype HackageGroupMember = HackageGroupMember
   { username :: HackageUsername
   }
-  deriving stock Generic
-  deriving anyclass FromJSON
+  deriving stock (Generic)
+  deriving anyclass (FromJSON)
 
 newtype ActualHackage m a = ActualHackage
   { unActualHackage :: m a
@@ -58,28 +58,35 @@ newtype ActualHackage m a = ActualHackage
   deriving newtype
     ( Functor
     , Applicative
-    , Monad , MonadIO
+    , Monad
+    , MonadIO
     , MonadLogger
     , MonadReader env
     )
 
 newtype GetSelfError = GetSelfError (Response ())
-  deriving stock (Eq, Show)
+  deriving stock (Show)
 
 instance Exception GetSelfError where
-  displayException (GetSelfError resp) = unlines
-    [ "Unable to determine Hackage Username"
-    , " Invalid /users/account-management redirect:" <> show resp
-    , " Unable to parse Location"
-    ]
+  displayException (GetSelfError resp) =
+    unlines
+      [ "Unable to determine Hackage Username"
+      , " Invalid /users/account-management redirect:" <> show resp
+      , " Unable to parse Location"
+      ]
 
-instance (MonadIO m, MonadReader env m, HasHackageApiKey env)
-  => MonadHackage (ActualHackage m) where
+instance
+  (MonadIO m, MonadReader env m, HasHackageApiKey env)
+  => MonadHackage (ActualHackage m)
+  where
   getSelf = do
     bs <- view $ hackageApiKeyL . unL
     resp <-
-      httpNoBody $ addApiKeyAuthorization bs $ disableRedirects $ parseRequest_
-        "https://hackage.haskell.org/users/account-management"
+      httpNoBody
+        $ addApiKeyAuthorization bs
+        $ disableRedirects
+        $ parseRequest_
+          "https://hackage.haskell.org/users/account-management"
     maybe (throwIO $ GetSelfError resp) pure $ do
       a <- lookupResponseHeader hLocation resp
       b <- stripPrefix "/user/" a
@@ -88,8 +95,8 @@ instance (MonadIO m, MonadReader env m, HasHackageApiKey env)
 
   getMaintainedPackages (HackageUsername username) = do
     bs <- view $ hackageApiKeyL . unL
-    fmap (mapMaybe packageFromMaintainers . groups . getResponseBody)
-      $ httpJSON
+    fmap (mapMaybe packageFromMaintainers . (.groups) . getResponseBody)
+      $ httpJSON @_ @HackageUser
       $ addApiKeyAuthorization bs
       $ parseRequest_
       $ "https://hackage.haskell.org/user/"
@@ -97,8 +104,8 @@ instance (MonadIO m, MonadReader env m, HasHackageApiKey env)
 
   getPackageMaintainers (Package name) = do
     bs <- view $ hackageApiKeyL . unL
-    fmap (map username . members . getResponseBody)
-      $ httpJSON
+    fmap (map (.username) . (.members) . getResponseBody)
+      $ httpJSON @_ @HackageGroup
       $ addApiKeyAuthorization bs
       $ parseRequest_
       $ "https://hackage.haskell.org/package/"
@@ -116,9 +123,9 @@ instance (MonadIO m, MonadReader env m, HasHackageApiKey env)
       $ httpNoBody
       $ addApiKeyAuthorization bs
       $ addToRequestQueryString
-          [ ("user", Just $ encodeUtf8 user)
-          , ("reason", Just $ encodeUtf8 reason)
-          ]
+        [ ("user", Just $ encodeUtf8 user)
+        , ("reason", Just $ encodeUtf8 reason)
+        ]
       $ setRequestCheckStatus
       $ parseRequest_
       $ "POST https://hackage.haskell.org/package/"

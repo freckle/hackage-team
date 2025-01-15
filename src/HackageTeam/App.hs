@@ -1,5 +1,5 @@
 module HackageTeam.App
-  ( App(..)
+  ( App (..)
   , loadApp
   , AppT
   , runAppT
@@ -7,29 +7,30 @@ module HackageTeam.App
 
 import HackageTeam.Prelude
 
-import qualified Data.ByteString.Char8 as BS8
+import Data.ByteString.Char8 qualified as BS8
 import HackageTeam.HackageApi
 import HackageTeam.HackageApi.Actual
 import HackageTeam.Options
 import System.Environment (getEnv)
 
 data App = App
-  { appOptions :: Options
-  , appHackageApiKey :: HackageApiKey
+  { options :: Options
+  , hackageApiKey :: HackageApiKey
   }
 
 instance HasOptions App where
-  optionsL = lens appOptions $ \x y -> x { appOptions = y }
+  optionsL = lens (.options) $ \x y -> x {options = y}
 
 instance HasHackageApiKey App where
-  hackageApiKeyL = lens appHackageApiKey $ \x y -> x { appHackageApiKey = y }
+  hackageApiKeyL = lens (.hackageApiKey) $ \x y -> x {hackageApiKey = y}
 
 loadApp :: Options -> IO App
 loadApp options = App options <$> (toKey <$> getEnv "HACKAGE_API_KEY")
-  where toKey = HackageApiKey . BS8.pack
+ where
+  toKey = HackageApiKey . BS8.pack
 
 newtype AppT m a = AppT
-  { unAppT :: ReaderT App (LoggingT m) a
+  { unwrap :: ReaderT App (LoggingT m) a
   }
   deriving newtype
     ( Functor
@@ -39,14 +40,14 @@ newtype AppT m a = AppT
     , MonadLogger
     , MonadReader App
     )
-  deriving MonadHackage via ActualHackage (AppT m)
+  deriving (MonadHackage) via ActualHackage (AppT m)
 
 runAppT :: MonadIO m => App -> AppT m a -> m a
 runAppT app =
   runStdoutLoggingT
-    . (if oVerbose $ appOptions app then id else filterDebug)
+    . (if app.options.verbose then id else filterDebug)
     . flip runReaderT app
-    . unAppT
+    . (.unwrap)
 
 filterDebug :: LoggingT m a -> LoggingT m a
 filterDebug = filterLogger $ const (>= LevelInfo)

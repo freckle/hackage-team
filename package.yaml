@@ -18,35 +18,29 @@ dependencies:
 ghc-options:
   - -Weverything
   - -Wno-missing-import-lists
+  - -Wno-missing-kind-signatures
+  - -Wno-missing-poly-kind-signatures
+  - -Wno-missing-role-annotations
   - -Wno-missing-safe-haskell-mode
-  - -Wno-prepositive-qualified-module
   - -Wno-unsafe
 
+language: GHC2021
+
 default-extensions:
-  - BangPatterns
   - DataKinds
   - DeriveAnyClass
-  - DeriveFoldable
-  - DeriveFunctor
-  - DeriveGeneric
-  - DeriveLift
-  - DeriveTraversable
   - DerivingStrategies
   - DerivingVia
-  - FlexibleContexts
-  - FlexibleInstances
+  - DuplicateRecordFields
   - GADTs
-  - GeneralizedNewtypeDeriving
   - LambdaCase
-  - MultiParamTypeClasses
+  - NoFieldSelectors
   - NoImplicitPrelude
   - NoMonomorphismRestriction
+  - NoPostfixOperators
+  - OverloadedRecordDot
   - OverloadedStrings
-  - RankNTypes
-  - RecordWildCards
-  - ScopedTypeVariables
-  - StandaloneDeriving
-  - TypeApplications
+  - QuasiQuotes
   - TypeFamilies
 
 library:
