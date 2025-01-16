@@ -15,7 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: ./.github/bin/check-uploader-packages
+      - if: ${{ github.actor != 'dependabot[bot]' }}
+        run: ./.github/bin/check-uploader-packages
         env:
           DRY_RUN: ${{ github.ref == 'refs/heads/main' && '0' || '1' }}
           GH_TOKEN: ${{ github.token }}
