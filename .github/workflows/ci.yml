@@ -10,6 +10,9 @@ on:
 
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   check-uploader-packages:
     runs-on: ubuntu-latest
