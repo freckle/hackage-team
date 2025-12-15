@@ -14,7 +14,7 @@ jobs:
   check-uploader-packages:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - if: ${{ github.actor != 'dependabot[bot]' }}
         run: ./.github/bin/check-uploader-packages
         env:
@@ -27,7 +27,7 @@ jobs:
     needs: [check-uploader-packages]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: freckle/stack-action@v5
 
       - name: Add new Freckle maintainers
