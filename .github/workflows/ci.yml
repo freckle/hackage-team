@@ -24,7 +24,11 @@ jobs:
           HACKAGE_UPLOAD_API_KEY: ${{ secrets.HACKAGE_UPLOAD_API_KEY }}
 
   test:
+    # needs is for ordering on main, where check-uploader-packages must grant
+    # the maintainer account access before the steps below use it. A failure
+    # there must not skip this job, which is a required status check.
     needs: [check-uploader-packages]
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
