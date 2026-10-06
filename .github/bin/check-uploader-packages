@@ -1,8 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+: "${DEBUG:=0}"
 : "${DRY_RUN:=1}"
 : "${ORG:=freckle}"
+
+if ((DEBUG)); then
+  set -x
+fi
 
 if [[ -z "${HACKAGE_API_KEY:=""}" ]]; then
   echo "HACKAGE_API_KEY must be set" >&2
@@ -14,21 +19,30 @@ if [[ -z "${HACKAGE_UPLOAD_API_KEY:=""}" ]]; then
   exit 1
 fi
 
+curl_() {
+  if ((DEBUG)); then
+    printf '[DEBUG] curl %s\n' "$*" >&2
+    curl "$@" | tee /dev/stderr
+  else
+    curl "$@"
+  fi
+}
+
 get_username() {
   local key=$1
-  curl \
+  curl_ \
     --silent \
     -D - \
     -H "authorization: X-ApiKey $key" \
     "https://hackage.haskell.org/users/account-management" |
     tr '\r\n' '\n' | # HTTP uses CRLF
-    sed '/^Location: \/user\/\([^\/]*\)\/manage$/!d; s//\1/'
+    sed '/^[Ll]ocation: \/user\/\([^\/]*\)\/manage$/!d; s//\1/'
 }
 
 get_packages() {
   local key=$1 username=$2
 
-  curl \
+  curl_ \
     --silent \
     -H "accept: application/json" \
     -H "authorization: X-ApiKey $key" \
@@ -36,6 +50,12 @@ get_packages() {
     jq --raw-output '.groups | .[]' |
     sed '/^\/package\/\([^\/]*\)\/maintainers/!d; s//\1/' |
     sort -u
+}
+
+get_packages_diff() {
+  comm -23 \
+    <(get_packages "$HACKAGE_UPLOAD_API_KEY" "$uploader") \
+    <(get_packages "$HACKAGE_API_KEY" "$maintainer")
 }
 
 add_maintainer() {
@@ -46,7 +66,7 @@ add_maintainer() {
     printf 'Would add \e[36m%s\e[0m to \e[32m%s\e[0m (\e[35m%s\e[0m), skipping due to DRY_RUN\n' "$maintainer" "$package" "$reason"
   else
     printf 'Add \e[36m%s\e[0m to \e[32m%s\e[0m (\e[35m%s\e[0m)\n' "$maintainer" "$package" "$reason"
-    curl \
+    curl_ \
       --silent \
       -D - \
       -H "authorization: X-ApiKey $key" \
@@ -64,23 +84,20 @@ cabal_file_repo() {
   gh api "/search/code?q=$q" --jq '.items | .[] | .repository.full_name' 2>/dev/null
 }
 
-read -r maintainer < <(get_username "$HACKAGE_API_KEY")
-
-if [[ -z "$maintainer" ]]; then
+if ! read -r maintainer < <(get_username "$HACKAGE_API_KEY"); then
   echo "Unable to determine maintainer from HACKAGE_API_KEY" >&2
   exit 1
 fi
 
-read -r uploader < <(get_username "$HACKAGE_UPLOAD_API_KEY")
-
-if [[ -z "$uploader" ]]; then
+if ! read -r uploader < <(get_username "$HACKAGE_UPLOAD_API_KEY"); then
   echo "Unable to determine uploader from HACKAGE_UPLOAD_API_KEY" >&2
   exit 1
 fi
 
-mapfile -t packages < <(comm -23 \
-  <(get_packages "$HACKAGE_UPLOAD_API_KEY" "$uploader") \
-  <(get_packages "$HACKAGE_API_KEY" "$maintainer"))
+if ! mapfile -t packages < <(get_packages_diff); then
+  echo "Unable to get maintaned packages differences" >&2
+  exit 1
+fi
 
 printf 'Found \e[31m%i\e[0m package(s) maintained by \e[35m%s\e[0m, but not \e[36m%s\e[0m\n' "${#packages[@]}" "$uploader" "$maintainer"
 
