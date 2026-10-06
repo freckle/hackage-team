@@ -36,7 +36,7 @@ get_username() {
     -H "authorization: X-ApiKey $key" \
     "https://hackage.haskell.org/users/account-management" |
     tr '\r\n' '\n' | # HTTP uses CRLF
-    sed '/^Location: \/user\/\([^\/]*\)\/manage$/!d; s//\1/'
+    sed '/^[Ll]ocation: \/user\/\([^\/]*\)\/manage$/!d; s//\1/'
 }
 
 get_packages() {
